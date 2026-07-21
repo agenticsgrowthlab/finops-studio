@@ -84,3 +84,5 @@ app.listen(PORT, () => {
   console.log(`   DB:      ${process.env.DATABASE_URL ? 'connected' : 'NOT SET'}`)
   console.log(`   Claude:  ${process.env.ANTHROPIC_API_KEY ? 'configured' : 'NOT SET'}\n`)
 })
+
+export default app
