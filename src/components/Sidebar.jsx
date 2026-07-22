@@ -1,6 +1,7 @@
 import React from 'react'
 
 export default function Sidebar({ page, setPage, projects, activeProjectId, setActiveProjectId, alertCount = 0 }) {
+  const [activeCollapsed, setActiveCollapsed] = React.useState(false)
   function nav(p, projId = null) {
     setPage(p)
     if (projId !== null) setActiveProjectId(projId)
@@ -43,8 +44,16 @@ export default function Sidebar({ page, setPage, projects, activeProjectId, setA
         {/* Active projects */}
         {projects.length > 0 && (
           <>
-            <div className="sidebar-section-label" style={{ marginTop: 8 }}>Active</div>
-            {projects.filter(p => p.status === 'active').map(p => (
+            <button
+              onClick={() => setActiveCollapsed(c => !c)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '14px 20px 6px', marginTop: 8 }}
+            >
+              <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                Active ({projects.filter(p => p.status === 'active').length})
+              </span>
+              <i className={`ti ${activeCollapsed ? 'ti-chevron-down' : 'ti-chevron-up'}`} style={{ fontSize: 11, color: 'var(--muted)' }} />
+            </button>
+            {!activeCollapsed && [...projects].filter(p => p.status === 'active').sort((a,b) => a.name.localeCompare(b.name)).map(p => (
               <button
                 key={p.id}
                 className={`sidebar-link ${page === 'project-detail' && activeProjectId === p.id ? 'active' : ''}`}

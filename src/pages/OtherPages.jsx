@@ -15,10 +15,14 @@ function effectiveSpend(project) {
 
 export function ArchReviews({ projects, reload }) {
   const [approving, setApproving] = useState(null)
+  const [selectedId, setSelectedId] = useState('all')
+  const [collapsed, setCollapsed] = useState({})
 
-  // Show all projects that have an arch review saved
-  const withReviews = projects.filter(p => p.arch_review)
-  const withoutReviews = projects.filter(p => !p.arch_review)
+  const withReviews = [...projects.filter(p => p.arch_review)].sort((a,b) => a.name.localeCompare(b.name))
+  const withoutReviews = [...projects.filter(p => !p.arch_review)].sort((a,b) => a.name.localeCompare(b.name))
+  const displayReviews = selectedId === 'all' ? withReviews : withReviews.filter(p => p.id === selectedId)
+
+  function toggleCollapse(id) { setCollapsed(c => ({ ...c, [id]: !c[id] })) }
 
   async function handleApprove(project) {
     setApproving(project.id)
@@ -43,7 +47,6 @@ export function ArchReviews({ projects, reload }) {
   return (
     <div className="page fade-in">
       <div className="page-header">
-        <div className="page-title">Architecture Reviews</div>
         <div className="page-sub">Formal AI architecture assessments — deterministic cost estimates, model selection, Claude analysis, and approval status</div>
       </div>
 
@@ -51,88 +54,102 @@ export function ArchReviews({ projects, reload }) {
         <div className="empty-state">
           <div className="empty-state-icon">🔍</div>
           <div className="empty-state-title">No architecture reviews yet</div>
-          <div className="empty-state-sub">Open any project → Architecture Review tab to generate a review. Works for both new and existing projects.</div>
+          <div className="empty-state-sub">Open any project → Architecture Review tab to generate a review.</div>
         </div>
       )}
 
-      {withReviews.map(p => {
+      {withReviews.length > 0 && (
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 20 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Filter:</label>
+          <select className="form-select" value={selectedId} onChange={e => setSelectedId(e.target.value)} style={{ width: 300 }}>
+            <option value="all">All Projects with Reviews ({withReviews.length})</option>
+            {withReviews.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </div>
+      )}
+
+      {displayReviews.map(p => {
         const review = p.arch_review
         const spend = effectiveSpend(p)
         const isApproved = review.approval_status === 'approved'
+        const isCollapsed = collapsed[p.id]
         return (
-          <div key={p.id} className="card" style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div key={p.id} className="card" style={{ marginBottom: 12 }}>
+            {/* Header — always visible, click to collapse */}
+            <div
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', cursor: 'pointer', marginBottom: isCollapsed ? 0 : 16 }}
+              onClick={() => toggleCollapse(p.id)}
+            >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                  <div style={{ fontSize: 17, fontWeight: 700 }}>{p.name}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div>
                   <span className={`project-type-badge ${p.type === 'existing' ? 'badge-existing' : 'badge-new'}`}>{p.type}</span>
                   <span className={`rating rating-${p.cost_score}`}>{p.cost_score}</span>
                 </div>
-                <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{p.description?.slice(0, 120)}</div>
+                <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{p.description?.slice(0, 100)}</div>
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }} onClick={e => e.stopPropagation()}>
                 <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: isApproved ? 'var(--green-bg)' : 'var(--amber-bg)', color: isApproved ? '#34D399' : '#FCD34D' }}>
                   {isApproved ? '✓ Approved' : review.approval_status || 'Draft'}
                 </span>
                 {!isApproved && (
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => handleApprove(p)}
-                    disabled={approving === p.id}
-                  >
+                  <button className="btn btn-primary btn-sm" onClick={() => handleApprove(p)} disabled={approving === p.id}>
                     <i className={`ti ${approving === p.id ? 'ti-loader' : 'ti-check'}`} />
-                    {approving === p.id ? 'Approving...' : 'Approve Review'}
+                    {approving === p.id ? 'Approving...' : 'Approve'}
                   </button>
                 )}
                 <button className="btn btn-ghost btn-sm" onClick={() => generateProjectPPT(p)}>
-                  <i className="ti ti-presentation" /> Export PPT
+                  <i className="ti ti-presentation" /> PPT
                 </button>
+                <i className={`ti ${isCollapsed ? 'ti-chevron-down' : 'ti-chevron-up'}`} style={{ fontSize: 14, color: 'var(--muted)', marginLeft: 4 }} />
               </div>
             </div>
 
-            {/* KPI row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
-              <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
-                <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Arch Score</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: p.arch_score >= 80 ? 'var(--green)' : 'var(--amber)' }}>{p.arch_score}/100</div>
-              </div>
-              <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
-                <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Monthly Spend</div>
-                <div style={{ fontFamily: 'JetBrains Mono', fontSize: 22, fontWeight: 700, color: 'var(--gold)' }}>{formatCost(spend)}</div>
-              </div>
-              <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
-                <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Annual Forecast</div>
-                <div style={{ fontFamily: 'JetBrains Mono', fontSize: 22, fontWeight: 700, color: 'var(--gold)' }}>{formatCost(spend * 12)}</div>
-              </div>
-              <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
-                <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Risk Level</div>
-                <span className={`risk risk-${p.risk_level}`}><span className="dot" />{p.risk_level}</span>
-              </div>
-            </div>
+            {/* Collapsible body */}
+            {!isCollapsed && (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
+                  <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Arch Score</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: p.arch_score >= 80 ? 'var(--green)' : 'var(--amber)' }}>{p.arch_score}/100</div>
+                  </div>
+                  <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Monthly Spend</div>
+                    <div style={{ fontFamily: 'JetBrains Mono', fontSize: 22, fontWeight: 700, color: 'var(--gold)' }}>{formatCost(spend)}</div>
+                  </div>
+                  <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Annual Forecast</div>
+                    <div style={{ fontFamily: 'JetBrains Mono', fontSize: 22, fontWeight: 700, color: 'var(--gold)' }}>{formatCost(spend * 12)}</div>
+                  </div>
+                  <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Risk Level</div>
+                    <span className={`risk risk-${p.risk_level}`}><span className="dot" />{p.risk_level}</span>
+                  </div>
+                </div>
 
-            {/* Claude summary preview */}
-            {review.claude_summary && (
-              <div style={{ background: 'rgba(212,185,106,0.05)', border: '1px solid rgba(212,185,106,0.15)', borderRadius: 10, padding: '14px 18px' }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <i className="ti ti-sparkles" /> AI Architecture Summary
-                </div>
-                <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.7, maxHeight: 120, overflow: 'hidden', maskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
-                  {review.claude_summary.replace(/#{1,3} /g, '').replace(/\*\*/g, '').slice(0, 400)}...
-                </div>
-              </div>
+                {review.claude_summary && (
+                  <div style={{ background: 'rgba(212,185,106,0.05)', border: '1px solid rgba(212,185,106,0.15)', borderRadius: 10, padding: '14px 18px' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <i className="ti ti-sparkles" /> AI Architecture Summary
+                    </div>
+                    <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.7, maxHeight: 120, overflow: 'hidden', maskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
+                      {review.claude_summary.replace(/#{1,3} /g, '').replace(/\*\*/g, '').slice(0, 400)}...
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )
       })}
 
-      {/* Projects without reviews */}
       {withoutReviews.length > 0 && (
         <div className="card" style={{ marginTop: 8 }}>
           <div className="card-title">Projects Without Architecture Reviews</div>
           {withoutReviews.map(p => (
             <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border2)' }}>
               <div style={{ fontSize: 13.5, fontWeight: 600 }}>{p.name}</div>
-              <span style={{ fontSize: 11, color: 'var(--muted)', fontStyle: 'italic' }}>No review — open project → Architecture Review tab</span>
+              <span style={{ fontSize: 11, color: 'var(--muted)', fontStyle: 'italic' }}>Open project → Architecture Review tab</span>
             </div>
           ))}
         </div>
@@ -140,6 +157,7 @@ export function ArchReviews({ projects, reload }) {
     </div>
   )
 }
+
 
 export function ScenarioPlanning({ projects }) {
   const [selectedProject, setSelectedProject] = useState(projects[0]?.id || '')
@@ -154,7 +172,6 @@ export function ScenarioPlanning({ projects }) {
   return (
     <div className="page fade-in">
       <div className="page-header">
-        <div className="page-title">Scenario Planning</div>
         <div className="page-sub">Model what happens to AI spend under different growth, usage, or architecture scenarios</div>
       </div>
 
@@ -278,7 +295,6 @@ export function LeadershipReports({ projects }) {
     <div className="page fade-in">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <div className="page-title">Leadership Reports</div>
           <div className="page-sub">Executive-ready PowerPoint reports generated from live project data</div>
         </div>
       </div>
@@ -339,7 +355,6 @@ export function Settings() {
   return (
     <div className="page fade-in">
       <div className="page-header">
-        <div className="page-title">Settings</div>
         <div className="page-sub">Organization and platform configuration</div>
       </div>
       <div style={{ maxWidth: 560 }}>
