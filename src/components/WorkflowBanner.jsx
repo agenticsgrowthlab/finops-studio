@@ -5,7 +5,7 @@ const STEPS = [
     icon: 'ti-sparkles',
     title: 'Welcome to AI FinOps Architecture Studio',
     body: 'Govern AI spend before it becomes a problem. This guide walks you through creating a project, estimating costs, setting guardrails, and generating a leadership report — in about 5 minutes.',
-    action: null,
+    action: 'welcome',
     actionLabel: null,
     checklist: [
       'Architecture reviews before you spend money',
@@ -17,7 +17,7 @@ const STEPS = [
   {
     icon: 'ti-plus',
     title: 'Step 1 — Create a Project',
-    body: 'Click New Project in the left navigation. Choose New (designing from scratch) or Existing (already running). Give it a name, description, and annual AI budget.',
+    body: 'Click the button to create a new project. Choose New (designing from scratch) or Existing (already running). Give it a name, description, and annual AI budget — then click Create.',
     action: 'new-project',
     actionLabel: 'Create New Project →',
     checklist: [
@@ -30,26 +30,26 @@ const STEPS = [
   {
     icon: 'ti-topology-star',
     title: 'Step 2 — Architecture Interview',
-    body: 'Inside your project, open the Architecture Review tab. Answer 8 questions. The studio calculates Low/Expected/High cost estimates, then Claude generates your architecture summary.',
-    action: null,
-    actionLabel: null,
+    body: 'Now open the Architecture Review tab on your project. Answer 8 questions about your use case. The studio calculates Low/Expected/High cost estimates, then Claude generates your architecture summary.',
+    action: 'arch-review',
+    actionLabel: 'Go to Architecture Review →',
     checklist: [
-      'Open your project → Architecture Review tab',
       'Answer all 8 questions (takes ~3 minutes)',
       'Review Low/Expected/High cost estimates',
       'Click Generate AI Summary & Save',
+      'Review is saved permanently to Neon',
     ],
   },
   {
     icon: 'ti-database',
     title: 'Step 3 — Add Services & Guardrails',
     body: 'Add each AI service (model, calls/day, tokens) in the Services tab. Then configure guardrails — spend ceilings, drift alerts, and model approvals protect your budget.',
-    action: null,
-    actionLabel: null,
+    action: 'services',
+    actionLabel: 'Go to Services Tab →',
     checklist: [
-      'Services tab → Add Service for each AI workflow',
+      'Add Service for each AI workflow in your project',
       'Cost calculated from server-maintained pricing table',
-      'Guardrails tab → Add monthly ceiling and drift alert',
+      'Add monthly ceiling and drift alert in Guardrails tab',
       'Cost efficiency rating (A/B/C/D) updates automatically',
     ],
   },
@@ -109,12 +109,44 @@ function useDrag(headerRef, posRef, setPos) {
   return { onPointerDown, onPointerMove, onPointerUp }
 }
 
-export default function useWorkflowBanner({ setPage }) {
+export default function useWorkflowBanner({ setPage, activeProjectId, setActiveProjectId, projects }) {
   const [dismissed, setDismissed] = useState(() => {
     try { return localStorage.getItem('finops_guide_dismissed') === 'true' } catch { return false }
   })
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(0)
+
+  // Hide CTA if user already has a project and we're on step 1 (create project)
+  function shouldHideAction(action) {
+    if (action === 'new-project' && projects && projects.length > 0) return true
+    return false
+  }
+
+  // Smart navigation — goes to project tab when possible
+  function handleAction(action) {
+    if (action === 'arch-review') {
+      if (activeProjectId) {
+        setPage('project-detail')
+        // Signal to ProjectDetail to open arch-review tab
+        sessionStorage.setItem('finops_open_tab', 'arch-review')
+      } else if (projects && projects.length > 0) {
+        setActiveProjectId(projects[0].id)
+        setPage('project-detail')
+        sessionStorage.setItem('finops_open_tab', 'arch-review')
+      }
+    } else if (action === 'services') {
+      if (activeProjectId) {
+        setPage('project-detail')
+        sessionStorage.setItem('finops_open_tab', 'services')
+      } else if (projects && projects.length > 0) {
+        setActiveProjectId(projects[0].id)
+        setPage('project-detail')
+        sessionStorage.setItem('finops_open_tab', 'services')
+      }
+    } else if (action !== 'welcome') {
+      setPage(action)
+    }
+  }
 
   const defaultPos = { x: Math.max(12, window.innerWidth - PANEL_W - 24), y: 80 }
   const posRef = useRef(defaultPos)
@@ -181,9 +213,9 @@ export default function useWorkflowBanner({ setPage }) {
               >
                 ← Back
               </button>
-              {current.action && (
+              {current.action && current.actionLabel && !shouldHideAction(current.action) && (
                 <button
-                  onClick={() => { setPage(current.action); }}
+                  onClick={() => handleAction(current.action)}
                   style={{ padding: '6px 14px', background: '#0F2240', color: '#D4B96A', border: 'none', borderRadius: 7, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', minHeight: 36 }}
                 >
                   {current.actionLabel}

@@ -753,7 +753,11 @@ const TABS = [
 ]
 
 export default function ProjectDetail({ project, setPage, addService, addDecision, reload }) {
-  const [tab, setTab] = useState('overview')
+  const [tab, setTab] = useState(() => {
+    const hint = sessionStorage.getItem('finops_open_tab')
+    if (hint) { sessionStorage.removeItem('finops_open_tab'); return hint }
+    return 'overview'
+  })
   if (!project) return <div className="page"><div style={{ color: 'var(--muted)' }}>Project not found.</div></div>
 
   return (

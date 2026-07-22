@@ -22,7 +22,7 @@ export default function App() {
     addService, addDecision, reload,
   } = useAppState()
 
-  const { banner, panel } = useWorkflowBanner({ setPage })
+  const { banner, panel } = useWorkflowBanner({ setPage, activeProjectId, setActiveProjectId, projects })
   const alertCount = projects.reduce((s, p) => s + (p.alerts || []).length, 0)
   const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
 
