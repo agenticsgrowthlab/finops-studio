@@ -88,7 +88,7 @@ app.use('/api/decisions',  decisionsRouter)
 app.use('/api/snapshots',  snapshotsRouter)
 app.use('/api/pricing',    pricingRouter)
 app.use('/api/chat',       chatRouter)
-app.use('/api/projects',   reviewsRouter)
+app.use('/api/reviews',    reviewsRouter)
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ error: 'Not found' }))

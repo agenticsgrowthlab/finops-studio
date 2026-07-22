@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { GUARDRAIL_TYPES, MODELS, monthlySpend, formatCost } from '../data/demo.js'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001'
@@ -357,14 +357,37 @@ const ARCH_QUESTIONS = [
 ]
 
 function ArchReviewTab({ project, reload }) {
-  const existing = project.arch_review || null
-  const [mode, setMode] = useState(existing ? 'view' : 'create')
-  const [answers, setAnswers] = useState(existing?.interview_answers || {})
+  const [existing, setExisting] = useState(project.arch_review || null)
+  const [mode, setMode] = useState(project.arch_review ? 'view' : 'create')
+  const [answers, setAnswers] = useState(project.arch_review?.interview_answers || {})
   const [estimate, setEstimate] = useState(null)
-  const [claudeSummary, setClaudeSummary] = useState(existing?.claude_summary || null)
+  const [claudeSummary, setClaudeSummary] = useState(project.arch_review?.claude_summary || null)
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [step, setStep] = useState(1)
+  const [loadingReview, setLoadingReview] = useState(false)
+
+  // Load review from API on mount
+  useEffect(() => {
+    async function loadReview() {
+      setLoadingReview(true)
+      try {
+        const r = await fetch(`${API}/api/reviews/${project.id}`)
+        const data = await r.json()
+        if (data.success && data.data) {
+          setExisting(data.data)
+          setAnswers(data.data.interview_answers || {})
+          setClaudeSummary(data.data.claude_summary || null)
+          setMode('view')
+        }
+      } catch (err) {
+        console.warn('Could not load review:', err.message)
+      } finally {
+        setLoadingReview(false)
+      }
+    }
+    loadReview()
+  }, [project.id])
 
   function calcEstimate(ans) {
     const freq = parseInt(ans.frequency) || 10
@@ -428,7 +451,7 @@ Provide a professional, executive-ready architecture review summary.`
 
       // Save to Neon
       setSaving(true)
-      await fetch(`${API}/api/projects/${project.id}/arch-review`, {
+      await fetch(`${API}/api/reviews/${project.id}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           interview_answers: answers,
