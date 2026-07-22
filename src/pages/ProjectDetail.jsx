@@ -357,18 +357,24 @@ const ARCH_QUESTIONS = [
 ]
 
 function ArchReviewTab({ project, reload }) {
-  const [existing, setExisting] = useState(project.arch_review || null)
-  const [mode, setMode] = useState(project.arch_review ? 'view' : 'create')
-  const [answers, setAnswers] = useState(project.arch_review?.interview_answers || {})
+  const [existing, setExisting] = useState(null)
+  const [mode, setMode] = useState('create')
+  const [answers, setAnswers] = useState({})
   const [estimate, setEstimate] = useState(null)
-  const [claudeSummary, setClaudeSummary] = useState(project.arch_review?.claude_summary || null)
+  const [claudeSummary, setClaudeSummary] = useState(null)
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [step, setStep] = useState(1)
   const [loadingReview, setLoadingReview] = useState(false)
 
-  // Load review from API on mount
+  // Reset and load review when project changes
   useEffect(() => {
+    setExisting(null)
+    setAnswers({})
+    setClaudeSummary(null)
+    setMode('create')
+    setStep(1)
+
     async function loadReview() {
       setLoadingReview(true)
       try {
