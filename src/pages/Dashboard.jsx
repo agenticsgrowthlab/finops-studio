@@ -1,6 +1,6 @@
 import React from 'react'
 import { monthlySpend, formatCost } from '../data/demo.js'
-import WorkflowBanner from '../components/WorkflowBanner.jsx'
+import useWorkflowBanner from '../components/WorkflowBanner.jsx'
 
 // Use estimate cost_exp_month when no services exist yet
 function effectiveSpend(project) {
@@ -12,6 +12,7 @@ function effectiveSpend(project) {
 }
 
 export default function Dashboard({ projects, setPage, setActiveProjectId }) {
+  const { banner, panel } = useWorkflowBanner({ setPage })
   const totalMonthly = projects.reduce((s, p) => s + effectiveSpend(p), 0)
   const totalAnnualBudget = projects.reduce((s, p) => s + (p.budget_annual || 0), 0)
   const totalAlerts = projects.reduce((s, p) => s + (p.alerts || []).length, 0)
@@ -23,19 +24,17 @@ export default function Dashboard({ projects, setPage, setActiveProjectId }) {
   projects.forEach(p => { if (p.cost_score) ratingCount[p.cost_score]++ })
 
   return (
+    <>
+    {panel}
     <div className="page fade-in">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <div className="page-title">FinOps Dashboard</div>
-          <div className="page-sub">AI spend overview across all Agentics Growth Lab projects</div>
-        </div>
+      {banner}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 16 }}>
+        <div style={{ fontSize: 13.5, color: 'var(--muted)' }}>AI spend overview across all Agentics Growth Lab projects</div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-ghost btn-sm"><i className="ti ti-refresh" /> Refresh</button>
           <button className="btn btn-primary btn-sm" onClick={() => setPage('reports')}><i className="ti ti-presentation" /> Leadership Report</button>
         </div>
       </div>
-
-      <WorkflowBanner setPage={setPage} />
 
       {/* KPI row */}
       <div className="stat-grid stat-grid-4" style={{ marginBottom: 24 }}>
@@ -166,5 +165,6 @@ export default function Dashboard({ projects, setPage, setActiveProjectId }) {
         </div>
       </div>
     </div>
+    </>
   )
 }
