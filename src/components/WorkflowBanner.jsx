@@ -116,12 +116,6 @@ export default function useWorkflowBanner({ setPage, activeProjectId, setActiveP
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(0)
 
-  // Hide CTA if user already has a project and we're on step 1 (create project)
-  function shouldHideAction(action) {
-    if (action === 'new-project' && projects && projects.length > 0) return true
-    return false
-  }
-
   // Smart navigation — goes to project tab when possible
   function handleAction(action) {
     if (action === 'arch-review') {
@@ -213,7 +207,7 @@ export default function useWorkflowBanner({ setPage, activeProjectId, setActiveP
               >
                 ← Back
               </button>
-              {current.action && current.actionLabel && !shouldHideAction(current.action) && (
+              {current.action && current.actionLabel && (
                 <button
                   onClick={() => handleAction(current.action)}
                   style={{ padding: '6px 14px', background: '#0F2240', color: '#D4B96A', border: 'none', borderRadius: 7, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', minHeight: 36 }}
