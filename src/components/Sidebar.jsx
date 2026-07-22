@@ -10,7 +10,7 @@ export default function Sidebar({ page, setPage, projects, activeProjectId, setA
 
   return (
     <nav className="sidebar">
-      <div className="sidebar-logo">
+      <div className="sidebar-logo" onClick={() => nav('dashboard')} style={{ cursor: 'pointer' }}>
         <div className="sidebar-logo-title">AI FinOps<br />Architecture Studio</div>
         <div className="sidebar-logo-sub">v1.0 · Beta</div>
       </div>
@@ -79,6 +79,14 @@ export default function Sidebar({ page, setPage, projects, activeProjectId, setA
         <button className={`sidebar-link ${isActive('guardrails') ? 'active' : ''}`} onClick={() => nav('guardrails')}>
           <i className="ti ti-shield-check" />
           Guardrail Definitions
+        </button>
+        <button className={`sidebar-link ${isActive('finops-foundation') ? 'active' : ''}`} onClick={() => nav('finops-foundation')}>
+          <i className="ti ti-certificate" />
+          FinOps Foundation
+        </button>
+        <button className={`sidebar-link ${isActive('how-to-use') ? 'active' : ''}`} onClick={() => nav('how-to-use')}>
+          <i className="ti ti-book" />
+          How to Use
         </button>
         <button className={`sidebar-link ${isActive('settings') ? 'active' : ''}`} onClick={() => nav('settings')}>
           <i className="ti ti-settings" />

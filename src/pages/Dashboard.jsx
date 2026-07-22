@@ -1,5 +1,6 @@
 import React from 'react'
 import { monthlySpend, formatCost } from '../data/demo.js'
+import WorkflowBanner from '../components/WorkflowBanner.jsx'
 
 // Use estimate cost_exp_month when no services exist yet
 function effectiveSpend(project) {
@@ -33,6 +34,8 @@ export default function Dashboard({ projects, setPage, setActiveProjectId }) {
           <button className="btn btn-primary btn-sm" onClick={() => setPage('reports')}><i className="ti ti-presentation" /> Leadership Report</button>
         </div>
       </div>
+
+      <WorkflowBanner setPage={setPage} />
 
       {/* KPI row */}
       <div className="stat-grid stat-grid-4" style={{ marginBottom: 24 }}>

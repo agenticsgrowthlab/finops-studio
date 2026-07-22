@@ -8,6 +8,8 @@ import ProjectDetail from './pages/ProjectDetail.jsx'
 import NewProject from './pages/NewProject.jsx'
 import GuardrailDefinitions from './pages/GuardrailDefinitions.jsx'
 import { ArchReviews, ScenarioPlanning, LeadershipReports, Settings } from './pages/OtherPages.jsx'
+import FinOpsFoundation from './pages/FinOpsFoundation.jsx'
+import HowToUse from './pages/HowToUse.jsx'
 import { useAppState } from './hooks/useAppState.js'
 
 export default function App() {
@@ -30,7 +32,9 @@ export default function App() {
     'arch-reviews':   'Architecture Reviews',
     scenario:         'Scenario Planning',
     reports:          'Leadership Reports',
-    guardrails:       'Guardrail Definitions',
+    guardrails:          'Guardrail Definitions',
+    'finops-foundation':  'FinOps Foundation',
+    'how-to-use':         'How to Use',
     settings:         'Settings',
   }
 
@@ -88,7 +92,9 @@ export default function App() {
         {page === 'arch-reviews'   && <ArchReviews projects={projects} reload={reload} />}
         {page === 'scenario'       && <ScenarioPlanning projects={projects} />}
         {page === 'reports'        && <LeadershipReports projects={projects} />}
-        {page === 'guardrails'     && <GuardrailDefinitions />}
+        {page === 'guardrails'        && <GuardrailDefinitions />}
+        {page === 'finops-foundation' && <FinOpsFoundation />}
+        {page === 'how-to-use'        && <HowToUse />}
         {page === 'settings'       && <Settings />}
       </div>
 
