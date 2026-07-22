@@ -82,6 +82,62 @@ const CERTIFICATION = {
   ],
 }
 
+
+// ── 30-60-90 Day Plan ─────────────────────────────────────────────────────────
+const DAY_PLAN = [
+  {
+    period: '30 Days',
+    color: 'var(--steel)',
+    theme: 'Inform — Get Full Visibility',
+    context: 'The FinOps for AI cert launched in March 2026. In your first 30 days, your job is to establish the single source of truth that every governance decision will depend on.',
+    goals: [
+      'Create a project in the Studio for every AI platform in scope — Cursor, Anthropic Console, Azure Foundry, Vertex AI, Braze, Genesys',
+      'Add every AI service with model, daily call volume, and token usage — building the attribution map the JD requires',
+      'Set guardrails on every platform: monthly spend ceiling, week-over-week drift, and cost per interaction',
+      'Run the Architecture Review on each platform to document current state, risks, and model selection rationale',
+      'Take your first weekly spend snapshot — this is Day 0 of your drift detection baseline',
+      'Export your first Leadership Report and present it to Finance — establish the reporting cadence',
+    ],
+    studioFeatures: ['Projects', 'Services', 'Guardrails', 'Architecture Review', 'Snapshots', 'Leadership Reports'],
+    certAlignment: 'INFORM phase — cost allocation, data ingestion, anomaly detection baseline',
+    jdAlignment: 'End-to-end visibility · Source-level budgets · Platform owner assignment · Monthly close cadence',
+  },
+  {
+    period: '60 Days',
+    color: 'var(--gold)',
+    theme: 'Optimize — Bend the Cost Curve',
+    context: 'With full visibility established, the 60-day phase is about actively reducing cost without reducing value. This is where the FinOps cert OPTIMIZE phase comes to life — and where this role earns its authority.',
+    goals: [
+      'Run Scenario Planning on every project: model what 2×, 5×, 10× adoption growth does to spend before it happens',
+      'Execute model routing policy: identify which workflows are using Opus/GPT-4o for tasks Haiku handles equally well',
+      'Implement prompt caching on all eligible services — typically 30-50% input token reduction',
+      'Build unit economics for every platform: cost per developer, cost per loan interaction, cost per accepted change',
+      'Establish the idle seat reclamation process — weekly audit, not quarterly cleanup',
+      'Define and enforce model change approval guardrail — gate access to high-cost models',
+    ],
+    studioFeatures: ['Scenario Planning', 'Unit Economics', 'Decisions Log', 'Guardrails — Model Change Approval', 'Forecasting'],
+    certAlignment: 'OPTIMIZE phase — workload optimization, unit economics, rate optimization',
+    jdAlignment: 'Model routing policy · Commitment strategy · Idle seat reclamation · Cost per workflow',
+  },
+  {
+    period: '90 Days',
+    color: 'var(--green)',
+    theme: 'Operate — Govern at Scale',
+    context: 'By 90 days, the governance framework is operational and self-sustaining. The FinOps cert OPERATE phase is about making these processes run without heroics — Finance is never surprised, leadership gets answers same day.',
+    goals: [
+      'Monthly AI spend close lands on time with variance explanations — every platform, every team',
+      'Showback and chargeback are live: spend is attributable to team, business unit, model, and workflow',
+      'Forecasting is tied to product-rollout milestones — not just run-rate extrapolation',
+      'Architecture Reviews are the standard process for any new AI initiative before a dollar is spent',
+      'FinOps Chatty is the on-demand answer for leadership: usage trends, model costs, guardrail status — same day',
+      'The model routing policy has measurably bent the cost curve vs. uncontrolled baseline — document and present the delta',
+    ],
+    studioFeatures: ['Leadership Reports', 'Forecasting', 'Alerts', 'FinOps Chatty', 'Architecture Reviews', 'Unit Economics'],
+    certAlignment: 'OPERATE phase — governance, education, assessment, invoicing, tools',
+    jdAlignment: 'Monthly close · Showback/chargeback · On-demand reporting · Model policy enforcement',
+  },
+]
+
 export default function FinOpsFoundation() {
   const [active, setActive] = useState(null)
 
@@ -165,6 +221,86 @@ export default function FinOpsFoundation() {
         <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold)', marginBottom: 4 }}>Governing Principle</div>
         <div style={{ fontSize: 13.5, color: 'var(--muted)' }}>
           Claude explains · Application calculates · Humans approve · Enterprise systems execute
+        </div>
+      </div>
+
+      {/* 30-60-90 Day Plan */}
+      <div style={{ marginTop: 32 }}>
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 4 }}>30-60-90 Day Plan for AI FinOps Leaders</div>
+          <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.7 }}>
+            How to apply FinOps for AI certification principles from day one at a new organization — using AI FinOps Architecture Studio as your operating system.
+            The <span style={{ color: 'var(--gold)', fontWeight: 600 }}>FinOps Certified: FinOps for AI</span> exam launched March 2026. This plan maps the cert's Inform → Optimize → Operate framework to real actions in your first 90 days.
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginTop: 20 }}>
+          {DAY_PLAN.map((d, idx) => (
+            <div key={d.period} style={{ background: 'var(--card)', border: `1px solid rgba(255,255,255,0.08)`, borderTop: `3px solid ${d.color}`, borderRadius: 'var(--radius-lg)', padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: `rgba(255,255,255,0.06)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: 'JetBrains Mono', fontSize: 11, fontWeight: 700, color: d.color }}>{idx + 1}</span>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'JetBrains Mono', fontSize: 13, fontWeight: 700, color: d.color }}>{d.period}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{d.theme}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.6 }}>{d.context}</div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: d.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Key Actions</div>
+                {d.goals.map((g, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: d.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--navy)' }}>{i + 1}</span>
+                    </div>
+                    <span style={{ fontSize: 11.5, color: 'var(--text)', lineHeight: 1.5 }}>{g}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                <div style={{ fontSize: 9.5, fontWeight: 700, color: d.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>Studio Features Used</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {d.studioFeatures.map(f => (
+                    <span key={f} style={{ fontSize: 10, background: 'rgba(255,255,255,0.06)', color: 'var(--muted)', padding: '2px 8px', borderRadius: 4 }}>{f}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border2)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div style={{ fontSize: 10, color: 'var(--muted)' }}>
+                  <span style={{ color: d.color, fontWeight: 600 }}>Cert: </span>{d.certAlignment}
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--muted)' }}>
+                  <span style={{ color: d.color, fontWeight: 600 }}>JD: </span>{d.jdAlignment}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Success metrics */}
+        <div style={{ marginTop: 20, padding: '18px 20px', background: 'rgba(14,122,92,0.06)', border: '1px solid rgba(14,122,92,0.2)', borderRadius: 'var(--radius)' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--green)', marginBottom: 10 }}>✓ What Success Looks Like at 90 Days</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+            {[
+              'Every AI platform has source-level budgets, alerts, and a clear owner',
+              'Monthly AI spend close lands on time — Finance and leadership are never surprised',
+              'Spend is fully attributable to team, business unit, model, and workflow',
+              'Model routing policy has measurably bent the cost curve vs. uncontrolled baseline',
+              'Idle seat reclamation runs as a standing process, not a quarterly cleanup',
+              'Leadership can get accurate AI usage and trend answers on demand, same day',
+            ].map((m, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8 }}>
+                <i className="ti ti-check" style={{ fontSize: 12, color: 'var(--green)', flexShrink: 0, marginTop: 2 }} />
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>{m}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

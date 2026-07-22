@@ -39,6 +39,7 @@ const JOURNEY = [
       'Quality: High → Sonnet recommended. Medium/Low → Haiku may suffice',
       'Compliance requirements affect model selection — be specific',
       'You can Update Review anytime as your requirements evolve',
+      '⚠️ Frequency means TOTAL calls per day — not per user. 300 users × 2 calls each = 600 total, not 300×600.',
     ],
     output: 'Saved architecture review with Claude summary, cost estimate, and model recommendations',
   },

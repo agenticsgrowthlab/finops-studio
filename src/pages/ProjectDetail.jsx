@@ -3,6 +3,16 @@ import { generateProjectPPT } from '../utils/generatePPT.js'
 import { GUARDRAIL_TYPES, MODELS, monthlySpend, formatCost } from '../data/demo.js'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+function estimateCO2monthly(services) {
+  const totalTokens = (services || []).reduce((s, svc) => {
+    return s + (Number(svc.calls_per_day||0) * 30 * (Number(svc.prompt_tokens_avg||0) + Number(svc.completion_tokens_avg||0)))
+  }, 0)
+  return (totalTokens / 1000) * 0.0003 // kg CO2
+}
+
+
 
 // ── Overview Tab ──────────────────────────────────────────────────────────────
 function OverviewTab({ project }) {
@@ -103,6 +113,7 @@ function OverviewTab({ project }) {
 // ── Services Tab ──────────────────────────────────────────────────────────────
 function ServicesTab({ project, reload }) {
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ name: '', model_id: 'claude-haiku-4-5', calls_per_day: '', prompt_tokens_avg: '', completion_tokens_avg: '', caching_enabled: false })
   const [estimate, setEstimate] = useState(null)
@@ -125,14 +136,36 @@ function ServicesTab({ project, reload }) {
     calcEstimate(next)
   }
 
+  function handleEdit(svc) {
+    setEditingId(svc.id)
+    setForm({
+      name: svc.name,
+      model_id: svc.model_id,
+      calls_per_day: String(svc.calls_per_day),
+      prompt_tokens_avg: String(svc.prompt_tokens_avg),
+      completion_tokens_avg: String(svc.completion_tokens_avg),
+      caching_enabled: svc.caching_enabled,
+    })
+    setShowForm(true)
+    setEstimate(null)
+  }
+
   async function handleAdd() {
     if (!form.name) return
     setSaving(true)
     try {
-      await fetch(`${API}/api/services`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, project_id: project.id, calls_per_day: Number(form.calls_per_day), prompt_tokens_avg: Number(form.prompt_tokens_avg), completion_tokens_avg: Number(form.completion_tokens_avg) }),
-      })
+      if (editingId) {
+        await fetch(`${API}/api/services/${editingId}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...form, calls_per_day: Number(form.calls_per_day), prompt_tokens_avg: Number(form.prompt_tokens_avg), completion_tokens_avg: Number(form.completion_tokens_avg) }),
+        })
+        setEditingId(null)
+      } else {
+        await fetch(`${API}/api/services`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...form, project_id: project.id, calls_per_day: Number(form.calls_per_day), prompt_tokens_avg: Number(form.prompt_tokens_avg), completion_tokens_avg: Number(form.completion_tokens_avg) }),
+        })
+      }
       setShowForm(false)
       setForm({ name: '', model_id: 'claude-haiku-4-5', calls_per_day: '', prompt_tokens_avg: '', completion_tokens_avg: '', caching_enabled: false })
       setEstimate(null)
@@ -153,14 +186,14 @@ function ServicesTab({ project, reload }) {
     <div className="fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ fontSize: 13.5, color: 'var(--muted)' }}>{(project.services || []).length} services · {formatCost(monthlySpend(project))}/month total</div>
-        <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)}>
+        <button className="btn btn-primary btn-sm" onClick={() => { setShowForm(!showForm); setEditingId(null); setForm({ name: '', model_id: 'claude-haiku-4-5', calls_per_day: '', prompt_tokens_avg: '', completion_tokens_avg: '', caching_enabled: false }); setEstimate(null) }}>
           <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} /> {showForm ? 'Cancel' : 'Add Service'}
         </button>
       </div>
 
       {showForm && (
         <div className="card" style={{ marginBottom: 20, border: '1px solid rgba(212,185,106,0.3)' }}>
-          <div className="card-title">New AI Service</div>
+          <div className="card-title">{editingId ? 'Edit Service' : 'New AI Service'}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div className="form-group">
               <label className="form-label">Service Name</label>
@@ -204,7 +237,7 @@ function ServicesTab({ project, reload }) {
               </div>
             </div>
           )}
-          <button className="btn btn-primary" onClick={handleAdd} disabled={saving}>{saving ? 'Adding...' : 'Add Service'}</button>
+          <button className="btn btn-primary" onClick={handleAdd} disabled={saving}>{saving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Service'}</button>
         </div>
       )}
 
@@ -224,7 +257,10 @@ function ServicesTab({ project, reload }) {
                 <td>{svc.caching_enabled ? <span style={{ color: 'var(--green)', fontSize: 12, fontWeight: 600 }}>✓ On</span> : <span style={{ color: 'var(--amber)', fontSize: 12 }}>Off</span>}</td>
                 <td style={{ fontFamily: 'JetBrains Mono', color: 'var(--gold)', fontWeight: 600 }}>{formatCost(svc.cost_month)}</td>
                 <td><span className={`rating rating-${r}`}>{r}</span></td>
-                <td><button onClick={() => handleDelete(svc.id)} className="btn btn-danger btn-sm"><i className="ti ti-trash" /></button></td>
+                <td style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => handleEdit(svc)} className="btn btn-ghost btn-sm"><i className="ti ti-edit" /></button>
+                  <button onClick={() => handleDelete(svc.id)} className="btn btn-danger btn-sm"><i className="ti ti-trash" /></button>
+                </td>
               </tr>
             )
           })}
@@ -795,6 +831,112 @@ function DecisionsTab({ project, reload }) {
   )
 }
 
+
+// ── Unit Economics Tab ────────────────────────────────────────────────────────
+function UnitEconomicsTab({ project }) {
+  const [unitName, setUnitName] = useState(project.unit_name || '')
+  const [unitsPerDay, setUnitsPerDay] = useState(project.units_per_day || '')
+  const [saved, setSaved] = useState(false)
+
+  const spend = (project.services || []).reduce((s, svc) => s + (Number(svc.cost_month)||0), 0)
+  const totalUnitsMonth = Number(unitsPerDay) * 30
+  const costPerUnit = totalUnitsMonth > 0 ? spend / totalUnitsMonth : null
+  const co2Monthly = estimateCO2monthly(project.services)
+
+  async function handleSave() {
+    try {
+      await fetch(`${API}/api/projects/${project.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unit_name: unitName, units_per_day: Number(unitsPerDay) }),
+      })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (err) { alert('Error saving: ' + err.message) }
+  }
+
+  return (
+    <div className="fade-in">
+      <div style={{ fontSize: 13.5, color: 'var(--muted)', marginBottom: 24 }}>Define your unit of value to calculate cost per outcome — the FinOps unit economics metric.</div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+        <div className="card">
+          <div className="card-title">Unit Definition</div>
+          <div className="form-group">
+            <label className="form-label">Unit of Value (what AI produces)</label>
+            <input className="form-input" placeholder="e.g. Email drafted, Meeting prepped, Report generated" value={unitName} onChange={e => setUnitName(e.target.value)} />
+            <div className="form-hint">The outcome your AI application delivers per interaction</div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Units Produced Per Day</label>
+            <input className="form-input" type="number" placeholder="e.g. 45" value={unitsPerDay} onChange={e => setUnitsPerDay(e.target.value)} />
+            <div className="form-hint">How many of these outcomes does the app produce daily</div>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={handleSave}>
+            {saved ? '✓ Saved' : 'Save Unit Definition'}
+          </button>
+        </div>
+
+        <div>
+          {costPerUnit !== null ? (
+            <div className="card" style={{ marginBottom: 16, border: '1px solid rgba(212,185,106,0.3)' }}>
+              <div className="card-title">Cost Per {unitName || 'Unit'}</div>
+              <div style={{ fontFamily: 'JetBrains Mono', fontSize: 36, color: 'var(--gold)', fontWeight: 700, marginBottom: 8 }}>
+                ${costPerUnit.toFixed(4)}
+              </div>
+              <div style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 16 }}>
+                per {unitName || 'unit'} · based on {totalUnitsMonth.toLocaleString()} units/month
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Monthly Spend</div>
+                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: 16, color: 'var(--gold)', fontWeight: 600 }}>${spend.toFixed(2)}</div>
+                </div>
+                <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 10.5, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Units/Month</div>
+                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: 16, fontWeight: 600 }}>{totalUnitsMonth.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="card" style={{ marginBottom: 16 }}>
+              <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)' }}>
+                <i className="ti ti-calculator" style={{ fontSize: 32, display: 'block', marginBottom: 12, opacity: 0.4 }} />
+                Enter unit name and daily volume to calculate cost per outcome
+              </div>
+            </div>
+          )}
+
+          {/* Sustainability */}
+          <div className="card" style={{ border: '1px solid rgba(14,122,92,0.25)' }}>
+            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="ti ti-leaf" style={{ color: 'var(--green)' }} /> Sustainability Estimate
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono', fontSize: 28, color: 'var(--green)', fontWeight: 700, marginBottom: 4 }}>
+              {co2Monthly.toFixed(3)} kg
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 12 }}>CO₂ estimated per month</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div style={{ padding: '8px 12px', background: 'rgba(14,122,92,0.08)', borderRadius: 8 }}>
+                <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2 }}>Annual estimate</div>
+                <div style={{ fontFamily: 'JetBrains Mono', fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>{(co2Monthly * 12).toFixed(2)} kg</div>
+              </div>
+              {costPerUnit && (
+                <div style={{ padding: '8px 12px', background: 'rgba(14,122,92,0.08)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2 }}>CO₂ per {unitName||'unit'}</div>
+                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>{totalUnitsMonth > 0 ? (co2Monthly / totalUnitsMonth * 1000).toFixed(4) : '—'} g</div>
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 10, fontStyle: 'italic' }}>
+              Estimated at 0.0003 kg CO₂/1K tokens · Varies by provider energy mix
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main ProjectDetail ────────────────────────────────────────────────────────
 const TABS = [
   { id: 'overview',      label: 'Overview',             icon: 'ti-layout-dashboard' },
@@ -802,6 +944,7 @@ const TABS = [
   { id: 'arch-review',   label: 'Architecture Review',  icon: 'ti-topology-star' },
   { id: 'guardrails',    label: 'Guardrails',           icon: 'ti-shield-check' },
   { id: 'decisions',     label: 'Decisions',            icon: 'ti-clipboard-check' },
+  { id: 'unit-economics', label: 'Unit Economics',        icon: 'ti-calculator' },
 ]
 
 export default function ProjectDetail({ project, setPage, addService, addDecision, reload }) {
@@ -847,6 +990,7 @@ export default function ProjectDetail({ project, setPage, addService, addDecisio
       {tab === 'arch-review' && <ArchReviewTab project={project} reload={reload} />}
       {tab === 'guardrails'  && <GuardrailsTab project={project} reload={reload} />}
       {tab === 'decisions'   && <DecisionsTab project={project} reload={reload} />}
+      {tab === 'unit-economics' && <UnitEconomicsTab project={project} />}
     </div>
   )
 }

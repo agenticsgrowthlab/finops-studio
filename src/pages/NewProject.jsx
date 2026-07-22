@@ -53,6 +53,7 @@ export default function NewProject({ addProject, setPage, setActiveProjectId }) 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [budget, setBudget] = useState('')
+  const [team, setTeam] = useState('')
   const [answers, setAnswers] = useState({})
   const [estimate, setEstimate] = useState(null)
 
@@ -74,6 +75,7 @@ export default function NewProject({ addProject, setPage, setActiveProjectId }) 
         description,
         type,
         status: 'active',
+        team: team || null,
         budget_annual: Number(budget) || (estimate ? Math.round(estimate.annualExpected * 1.2) : 0),
       })
       // addProject handles setActiveProjectId internally after reload
@@ -133,6 +135,11 @@ export default function NewProject({ addProject, setPage, setActiveProjectId }) 
             <label className="form-label">Annual AI Budget (USD, optional)</label>
             <input className="form-input" type="number" placeholder="12000" value={budget} onChange={e => setBudget(e.target.value)} />
             <div className="form-hint">We'll alert you when projected spend approaches this threshold.</div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Enterprise Team (optional)</label>
+            <input className="form-input" placeholder="e.g. Advisor Technology, Digital Banking, Platform Engineering" value={team} onChange={e => setTeam(e.target.value)} />
+            <div className="form-hint">Used for cost allocation and chargeback reporting</div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="btn btn-ghost" onClick={() => setStep(1)}>← Back</button>

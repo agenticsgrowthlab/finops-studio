@@ -9,6 +9,8 @@ import NewProject from './pages/NewProject.jsx'
 import GuardrailDefinitions from './pages/GuardrailDefinitions.jsx'
 import { ArchReviews, ScenarioPlanning, LeadershipReports, Settings } from './pages/OtherPages.jsx'
 import FinOpsFoundation from './pages/FinOpsFoundation.jsx'
+import Forecasting from './pages/Forecasting.jsx'
+import Alerts from './pages/Alerts.jsx'
 import HowToUse from './pages/HowToUse.jsx'
 import { useAppState } from './hooks/useAppState.js'
 import useWorkflowBanner from './components/WorkflowBanner.jsx'
@@ -36,6 +38,8 @@ export default function App() {
     reports:          'Leadership Reports',
     guardrails:          'Guardrail Definitions',
     'finops-foundation':  'FinOps Foundation',
+    'forecasting':        'Forecasting',
+    'alerts':             'Alerts',
     'how-to-use':         'How to Use',
     settings:         'Settings',
   }
@@ -92,6 +96,8 @@ export default function App() {
         {page === 'projects'       && <Projects projects={projects} setPage={setPage} setActiveProjectId={setActiveProjectId} removeProject={removeProject} />}
         {page === 'new-project'    && <NewProject addProject={addProject} setPage={setPage} setActiveProjectId={setActiveProjectId} />}
         {page === 'project-detail' && <ProjectDetail project={activeProject} setPage={setPage} addService={addService} addDecision={addDecision} reload={reload} />}
+        {page === 'alerts'         && <Alerts projects={projects} reload={reload} />}
+        {page === 'forecasting'    && <Forecasting projects={projects} />}
         {page === 'arch-reviews'   && <ArchReviews projects={projects} reload={reload} />}
         {page === 'scenario'       && <ScenarioPlanning projects={projects} />}
         {page === 'reports'        && <LeadershipReports projects={projects} />}

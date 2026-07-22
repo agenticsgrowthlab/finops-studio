@@ -70,6 +70,15 @@ export default function Sidebar({ page, setPage, projects, activeProjectId, setA
 
         {/* Tools */}
         <div className="sidebar-section-label" style={{ marginTop: 8 }}>Tools</div>
+        <button className={`sidebar-link ${isActive('alerts') ? 'active' : ''}`} onClick={() => nav('alerts')}>
+          <i className="ti ti-bell" />
+          Alerts
+          {alertCount > 0 && <span className="badge">{alertCount}</span>}
+        </button>
+        <button className={`sidebar-link ${isActive('forecasting') ? 'active' : ''}`} onClick={() => nav('forecasting')}>
+          <i className="ti ti-trending-up" />
+          Forecasting
+        </button>
         <button className={`sidebar-link ${isActive('arch-reviews') ? 'active' : ''}`} onClick={() => nav('arch-reviews')}>
           <i className="ti ti-topology-star" />
           Architecture Reviews
