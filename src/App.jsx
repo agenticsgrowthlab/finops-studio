@@ -11,6 +11,7 @@ import { ArchReviews, ScenarioPlanning, LeadershipReports, Settings } from './pa
 import FinOpsFoundation from './pages/FinOpsFoundation.jsx'
 import HowToUse from './pages/HowToUse.jsx'
 import { useAppState } from './hooks/useAppState.js'
+import useWorkflowBanner from './components/WorkflowBanner.jsx'
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
@@ -21,6 +22,7 @@ export default function App() {
     addService, addDecision, reload,
   } = useAppState()
 
+  const { banner, panel } = useWorkflowBanner({ setPage })
   const alertCount = projects.reduce((s, p) => s + (p.alerts || []).length, 0)
   const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
 
@@ -66,6 +68,7 @@ export default function App() {
         alertCount={alertCount}
       />
       <div className="main-content">
+        {banner}
         <div className="topbar">
           <div className="topbar-title">{PAGE_TITLES[page] || 'AI FinOps Architecture Studio'}</div>
           <div className="topbar-right">
@@ -98,7 +101,7 @@ export default function App() {
         {page === 'settings'       && <Settings />}
       </div>
 
-      <FinOpsChatty
+<FinOpsChatty
         page={page}
         projectId={page === 'project-detail' ? activeProjectId : null}
         projectName={activeProject?.name}

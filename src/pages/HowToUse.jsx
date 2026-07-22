@@ -180,7 +180,6 @@ export default function HowToUse() {
   return (
     <div className="page fade-in">
       <div className="page-header">
-        <div className="page-title">How to Use This Product</div>
         <div className="page-sub">A complete guide to governing AI spend — from first project to leadership report</div>
       </div>
 

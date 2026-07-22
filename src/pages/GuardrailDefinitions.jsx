@@ -8,7 +8,6 @@ export default function GuardrailDefinitions() {
   return (
     <div className="page fade-in">
       <div className="page-header">
-        <div className="page-title">Guardrail Definitions</div>
         <div className="page-sub">FinOps AI cost efficiency ratings, behaviors, and triggers — aligned with FinOps Foundation principles</div>
       </div>
 

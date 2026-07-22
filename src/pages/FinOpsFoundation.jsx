@@ -88,7 +88,6 @@ export default function FinOpsFoundation() {
   return (
     <div className="page fade-in">
       <div className="page-header">
-        <div className="page-title">FinOps Foundation</div>
         <div className="page-sub">How AI FinOps Architecture Studio applies FinOps Foundation principles to AI/ML workloads</div>
       </div>
 

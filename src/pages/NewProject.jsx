@@ -67,25 +67,25 @@ export default function NewProject({ addProject, setPage, setActiveProjectId }) 
     setStep(4)
   }
 
-  function handleCreate() {
-    const project = addProject({
-      name,
-      description,
-      type,
-      status: 'active',
-      budget_annual: Number(budget) || (estimate ? Math.round(estimate.annualExpected * 1.2) : 0),
-      arch_score: 85,
-      cost_score: 'B',
-      risk_level: 'low',
-    })
-    setActiveProjectId(project.id)
-    setPage('project-detail')
+  async function handleCreate() {
+    try {
+      await addProject({
+        name,
+        description,
+        type,
+        status: 'active',
+        budget_annual: Number(budget) || (estimate ? Math.round(estimate.annualExpected * 1.2) : 0),
+      })
+      // addProject handles setActiveProjectId internally after reload
+      setPage('project-detail')
+    } catch (err) {
+      alert('Error creating project: ' + err.message)
+    }
   }
 
   return (
     <div className="page fade-in">
       <div className="page-header">
-        <div className="page-title">New Project</div>
         <div className="page-sub">Create a project to track AI spend and prevent cost surprises</div>
       </div>
 

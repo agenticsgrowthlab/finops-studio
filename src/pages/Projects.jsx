@@ -6,7 +6,6 @@ export default function Projects({ projects, setPage, setActiveProjectId }) {
     <div className="page fade-in">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <div className="page-title">All Projects</div>
           <div className="page-sub">{projects.length} projects · Agentics Growth Lab</div>
         </div>
         <button className="btn btn-primary" onClick={() => setPage('new-project')}>

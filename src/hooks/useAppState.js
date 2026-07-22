@@ -1,6 +1,13 @@
-// src/hooks/useAppState.js
 import { useState, useEffect, useCallback } from 'react'
-import { fetchProjects, createProject, updateProject, deleteProject, createService, createDecision } from './useApi.js'
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+async function apiFetch(path, options = {}) {
+  const r = await fetch(`${API}${path}`, { headers: { 'Content-Type': 'application/json' }, ...options })
+  const data = await r.json()
+  if (!data.success) throw new Error(data.error)
+  return data.data
+}
 
 export function useAppState() {
   const [projects, setProjects] = useState([])
@@ -10,29 +17,36 @@ export function useAppState() {
 
   const activeProject = projects.find(p => p.id === activeProjectId) || null
 
-  // Load all projects from Neon on mount
-  useEffect(() => {
-    loadProjects()
-  }, [])
-
   async function loadProjects() {
     try {
-      setLoading(true)
       setError(null)
-      const data = await fetchProjects()
+      const data = await apiFetch('/api/projects')
       setProjects(data)
+      return data
     } catch (err) {
       console.error('[useAppState] loadProjects:', err)
       setError(err.message)
-    } finally {
-      setLoading(false)
+      return []
     }
   }
 
+  useEffect(() => {
+    loadProjects().finally(() => setLoading(false))
+  }, [])
+
   const addProject = useCallback(async (payload) => {
     try {
-      const newProject = await createProject(payload)
-      await loadProjects() // reload to get enriched data
+      const newProject = await apiFetch('/api/projects', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+      // Reload and update projects state, then set active project from fresh data
+      const freshProjects = await apiFetch('/api/projects')
+      setProjects(freshProjects)
+      // Find the new project in fresh data to confirm it exists
+      const found = freshProjects.find(p => p.id === newProject.id)
+      if (found) setActiveProjectId(found.id)
+      else setActiveProjectId(newProject.id)
       return newProject
     } catch (err) {
       console.error('[useAppState] addProject:', err)
@@ -42,7 +56,7 @@ export function useAppState() {
 
   const editProject = useCallback(async (id, payload) => {
     try {
-      await updateProject(id, payload)
+      await apiFetch(`/api/projects/${id}`, { method: 'PUT', body: JSON.stringify(payload) })
       await loadProjects()
     } catch (err) {
       console.error('[useAppState] editProject:', err)
@@ -52,7 +66,7 @@ export function useAppState() {
 
   const removeProject = useCallback(async (id) => {
     try {
-      await deleteProject(id)
+      await apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
       setProjects(prev => prev.filter(p => p.id !== id))
       if (activeProjectId === id) setActiveProjectId(null)
     } catch (err) {
@@ -63,7 +77,7 @@ export function useAppState() {
 
   const addService = useCallback(async (projectId, payload) => {
     try {
-      await createService({ ...payload, project_id: projectId })
+      await apiFetch('/api/services', { method: 'POST', body: JSON.stringify({ ...payload, project_id: projectId }) })
       await loadProjects()
     } catch (err) {
       console.error('[useAppState] addService:', err)
@@ -73,7 +87,7 @@ export function useAppState() {
 
   const addDecision = useCallback(async (projectId, payload) => {
     try {
-      await createDecision({ ...payload, project_id: projectId })
+      await apiFetch('/api/decisions', { method: 'POST', body: JSON.stringify({ ...payload, project_id: projectId }) })
       await loadProjects()
     } catch (err) {
       console.error('[useAppState] addDecision:', err)
@@ -81,18 +95,14 @@ export function useAppState() {
     }
   }, [])
 
+  const reload = useCallback(async () => {
+    await loadProjects()
+  }, [])
+
   return {
-    projects,
-    loading,
-    error,
-    activeProject,
-    activeProjectId,
-    setActiveProjectId,
-    addProject,
-    editProject,
-    removeProject,
-    addService,
-    addDecision,
-    reload: loadProjects,
+    projects, loading, error,
+    activeProject, activeProjectId, setActiveProjectId,
+    addProject, editProject, removeProject,
+    addService, addDecision, reload,
   }
 }

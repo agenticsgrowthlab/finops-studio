@@ -766,7 +766,6 @@ export default function ProjectDetail({ project, setPage, addService, addDecisio
             </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-            <div className="page-title" style={{ marginBottom: 0 }}>{project.name}</div>
             <span className={`project-type-badge ${project.type === 'existing' ? 'badge-existing' : 'badge-new'}`}>{project.type}</span>
             <span className={`rating rating-${project.cost_score}`}>{project.cost_score}</span>
             <span className={`risk risk-${project.risk_level}`}><span className="dot" />{project.risk_level} risk</span>
