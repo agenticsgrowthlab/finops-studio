@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { generateProjectPPT } from '../utils/generatePPT.js'
 import { GUARDRAIL_TYPES, MODELS, monthlySpend, formatCost } from '../data/demo.js'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001'
@@ -774,7 +775,7 @@ export default function ProjectDetail({ project, setPage, addService, addDecisio
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-ghost btn-sm" onClick={reload}><i className="ti ti-refresh" /> Refresh</button>
-          <button className="btn btn-primary btn-sm"><i className="ti ti-presentation" /> Export PPT</button>
+          <button className="btn btn-primary btn-sm" onClick={() => generateProjectPPT(project)}><i className="ti ti-presentation" /> Export PPT</button>
         </div>
       </div>
 
