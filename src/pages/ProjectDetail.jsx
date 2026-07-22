@@ -371,10 +371,18 @@ function ArchReviewTab({ project, reload }) {
   // Reset and load review when project changes
   useEffect(() => {
     setExisting(null)
-    setAnswers({})
     setClaudeSummary(null)
     setMode('create')
     setStep(1)
+
+    // Restore draft answers from sessionStorage while we wait for API
+    const draftKey = `finops_draft_answers_${project.id}`
+    const savedDraft = sessionStorage.getItem(draftKey)
+    if (savedDraft) {
+      try { setAnswers(JSON.parse(savedDraft)) } catch {}
+    } else {
+      setAnswers({})
+    }
 
     async function loadReview() {
       setLoadingReview(true)
@@ -382,10 +390,15 @@ function ArchReviewTab({ project, reload }) {
         const r = await fetch(`${API}/api/reviews/${project.id}`)
         const data = await r.json()
         if (data.success && data.data) {
+          // Parse interview_answers if it came back as a string
+          let ia = data.data.interview_answers || {}
+          if (typeof ia === 'string') { try { ia = JSON.parse(ia) } catch {} }
           setExisting(data.data)
-          setAnswers(data.data.interview_answers || {})
+          setAnswers(ia)
           setClaudeSummary(data.data.claude_summary || null)
           setMode('view')
+          // Clear draft since we have saved data
+          sessionStorage.removeItem(draftKey)
         }
       } catch (err) {
         console.warn('Could not load review:', err.message)
@@ -395,6 +408,14 @@ function ArchReviewTab({ project, reload }) {
     }
     loadReview()
   }, [project.id])
+
+  // Autosave answers to sessionStorage as user types
+  useEffect(() => {
+    if (mode === 'create' && Object.keys(answers).length > 0) {
+      const draftKey = `finops_draft_answers_${project.id}`
+      sessionStorage.setItem(draftKey, JSON.stringify(answers))
+    }
+  }, [answers, project.id, mode])
 
   function calcEstimate(ans) {
     const freq = parseInt(ans.frequency) || 10
@@ -470,6 +491,27 @@ Provide a professional, executive-ready architecture review summary.`
           claude_summary: summary,
         }),
       })
+
+      // Auto-create a service from the estimate if no services exist yet
+      if ((project.services || []).length === 0 && estimate) {
+        try {
+          await fetch(`${API}/api/services`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              project_id: project.id,
+              name: project.name + ' — AI Service',
+              model_id: estimate.model,
+              calls_per_day: estimate.callsDay,
+              prompt_tokens_avg: estimate.promptTokens,
+              completion_tokens_avg: estimate.completionTokens,
+              caching_enabled: estimate.cachingRecommended,
+            }),
+          })
+        } catch (e) { console.warn('Could not auto-create service:', e.message) }
+      }
+
+      // Clear draft
+      sessionStorage.removeItem(`finops_draft_answers_${project.id}`)
       setMode('view')
       reload()
     } catch (err) {
@@ -478,6 +520,16 @@ Provide a professional, executive-ready architecture review summary.`
       setGenerating(false)
       setSaving(false)
     }
+  }
+
+  if (loadingReview) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--muted)' }}>
+        <i className="ti ti-loader" style={{ fontSize: 24, animation: 'spin 1s linear infinite', display: 'block', marginBottom: 12 }} />
+        Loading architecture review...
+        <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
+      </div>
+    )
   }
 
   if (mode === 'view' && (existing || claudeSummary)) {
@@ -538,7 +590,7 @@ Provide a professional, executive-ready architecture review summary.`
           {ARCH_QUESTIONS.map(q => (
             <div className="form-group" key={q.id}>
               <label className="form-label">{q.label}</label>
-              <input className="form-input" placeholder={q.placeholder} value={answers[q.id] || ''} onChange={e => setAnswers(p => ({ ...p, [q.id]: e.target.value }))} />
+              <input className="form-input" placeholder={q.placeholder} value={answers[q.id] || ''} onChange={e => { const next = { ...answers, [q.id]: e.target.value }; setAnswers(next) }} />
             </div>
           ))}
           <button className="btn btn-primary" onClick={handleAnswerNext}>Generate Estimate & Review →</button>
