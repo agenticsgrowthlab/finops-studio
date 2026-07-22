@@ -85,7 +85,7 @@ export default function App() {
         {page === 'projects'       && <Projects projects={projects} setPage={setPage} setActiveProjectId={setActiveProjectId} removeProject={removeProject} />}
         {page === 'new-project'    && <NewProject addProject={addProject} setPage={setPage} setActiveProjectId={setActiveProjectId} />}
         {page === 'project-detail' && <ProjectDetail project={activeProject} setPage={setPage} addService={addService} addDecision={addDecision} reload={reload} />}
-        {page === 'arch-reviews'   && <ArchReviews projects={projects} />}
+        {page === 'arch-reviews'   && <ArchReviews projects={projects} reload={reload} />}
         {page === 'scenario'       && <ScenarioPlanning projects={projects} />}
         {page === 'reports'        && <LeadershipReports projects={projects} />}
         {page === 'guardrails'     && <GuardrailDefinitions />}

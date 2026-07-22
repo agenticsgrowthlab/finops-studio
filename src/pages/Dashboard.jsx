@@ -1,8 +1,17 @@
 import React from 'react'
 import { monthlySpend, formatCost } from '../data/demo.js'
 
+// Use estimate cost_exp_month when no services exist yet
+function effectiveSpend(project) {
+  const svcSpend = (project.services || []).reduce((s, svc) => s + (Number(svc.cost_month) || 0), 0)
+  if (svcSpend > 0) return svcSpend
+  const est = project.estimate
+  if (est && Number(est.cost_exp_month) > 0) return Number(est.cost_exp_month)
+  return 0
+}
+
 export default function Dashboard({ projects, setPage, setActiveProjectId }) {
-  const totalMonthly = projects.reduce((s, p) => s + monthlySpend(p), 0)
+  const totalMonthly = projects.reduce((s, p) => s + effectiveSpend(p), 0)
   const totalAnnualBudget = projects.reduce((s, p) => s + (p.budget_annual || 0), 0)
   const totalAlerts = projects.reduce((s, p) => s + (p.alerts || []).length, 0)
   const totalServices = projects.reduce((s, p) => s + (p.services || []).length, 0)
@@ -67,7 +76,7 @@ export default function Dashboard({ projects, setPage, setActiveProjectId }) {
             ))}
           </div>
           {projects.map(p => {
-            const spend = monthlySpend(p)
+            const spend = effectiveSpend(p)
             const budget = (p.budget_annual || 0) / 12
             const pct = budget > 0 ? Math.min(100, (spend / budget) * 100) : 0
             return (
