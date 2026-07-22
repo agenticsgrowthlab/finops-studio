@@ -48,13 +48,15 @@ router.get('/', async (req, res) => {
     )
 
     const enriched = await Promise.all(projects.rows.map(async (p) => {
-      const [services, guardrails, alerts, snapshots, recommendations, decisions] = await Promise.all([
+      const [services, guardrails, alerts, snapshots, recommendations, decisions, archReviews, estimates] = await Promise.all([
         pool.query(`SELECT * FROM services WHERE project_id = $1 ORDER BY created_at`, [p.id]),
         pool.query(`SELECT * FROM guardrails WHERE project_id = $1 ORDER BY created_at`, [p.id]),
         pool.query(`SELECT * FROM alerts WHERE project_id = $1 AND resolved_at IS NULL ORDER BY triggered_at DESC`, [p.id]),
         pool.query(`SELECT * FROM snapshots WHERE project_id = $1 ORDER BY captured_at DESC LIMIT 8`, [p.id]),
         pool.query(`SELECT * FROM recommendations WHERE project_id = $1 AND status = 'open' ORDER BY priority, created_at`, [p.id]),
         pool.query(`SELECT * FROM decisions WHERE project_id = $1 ORDER BY created_at DESC`, [p.id]),
+        pool.query(`SELECT * FROM architecture_reviews WHERE project_id = $1 ORDER BY created_at DESC LIMIT 1`, [p.id]),
+        pool.query(`SELECT * FROM estimates WHERE project_id = $1 ORDER BY created_at DESC LIMIT 1`, [p.id]),
       ])
 
       const costScore = calcCostScore(services.rows, p.budget_annual)
@@ -72,6 +74,8 @@ router.get('/', async (req, res) => {
         snapshots: snapshots.rows,
         recommendations: recommendations.rows,
         decisions: decisions.rows,
+        arch_review: archReviews.rows[0] || null,
+        estimate: estimates.rows[0] || null,
       }
     }))
 
