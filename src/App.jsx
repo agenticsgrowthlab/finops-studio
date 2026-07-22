@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import './styles/global.css'
 import Sidebar from './components/Sidebar.jsx'
+import FinOpsChatty from './components/FinOpsChatty.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Projects from './pages/Projects.jsx'
 import ProjectDetail from './pages/ProjectDetail.jsx'
@@ -33,20 +34,19 @@ export default function App() {
     settings:         'Settings',
   }
 
-  // Loading screen
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--navy)', flexDirection: 'column', gap: 16 }}>
-      <div style={{ width: 40, height: 40, border: '3px solid rgba(212,185,106,0.2)', borderTop: '3px solid var(--gold)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <div style={{ color: 'var(--muted)', fontSize: 13 }}>Loading AI FinOps Architecture Studio...</div>
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'var(--navy)', flexDirection:'column', gap:16 }}>
+      <div style={{ width:40, height:40, border:'3px solid rgba(212,185,106,0.2)', borderTop:'3px solid var(--gold)', borderRadius:'50%', animation:'spin 1s linear infinite' }} />
+      <div style={{ color:'var(--muted)', fontSize:13 }}>Loading AI FinOps Architecture Studio...</div>
+      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
   )
 
-  // Error screen
   if (error) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--navy)', flexDirection: 'column', gap: 16 }}>
-      <i className="ti ti-alert-triangle" style={{ fontSize: 40, color: 'var(--red)' }} />
-      <div style={{ color: 'var(--text)', fontSize: 16, fontWeight: 700 }}>Unable to connect to database</div>
-      <div style={{ color: 'var(--muted)', fontSize: 13 }}>{error}</div>
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'var(--navy)', flexDirection:'column', gap:16 }}>
+      <i className="ti ti-alert-triangle" style={{ fontSize:40, color:'var(--red)' }} />
+      <div style={{ color:'var(--text)', fontSize:16, fontWeight:700 }}>Unable to connect to database</div>
+      <div style={{ color:'var(--muted)', fontSize:13 }}>{error}</div>
       <button className="btn btn-primary" onClick={reload}>Retry</button>
     </div>
   )
@@ -62,30 +62,25 @@ export default function App() {
         alertCount={alertCount}
       />
       <div className="main-content">
-        {/* Topbar */}
         <div className="topbar">
           <div className="topbar-title">{PAGE_TITLES[page] || 'AI FinOps Architecture Studio'}</div>
           <div className="topbar-right">
             <span className="topbar-date">{today}</span>
             {alertCount > 0 && (
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--red-bg)', border: '1px solid rgba(184,50,50,0.4)', borderRadius: 20, padding: '3px 10px', cursor: 'pointer' }}
-                onClick={() => setPage('dashboard')}
-              >
-                <i className="ti ti-alert-triangle" style={{ fontSize: 13, color: '#F87171' }} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#F87171' }}>{alertCount} alert{alertCount !== 1 ? 's' : ''}</span>
+              <div style={{ display:'flex', alignItems:'center', gap:6, background:'var(--red-bg)', border:'1px solid rgba(184,50,50,0.4)', borderRadius:20, padding:'3px 10px', cursor:'pointer' }} onClick={() => setPage('dashboard')}>
+                <i className="ti ti-alert-triangle" style={{ fontSize:13, color:'#F87171' }} />
+                <span style={{ fontSize:12, fontWeight:700, color:'#F87171' }}>{alertCount} alert{alertCount !== 1 ? 's' : ''}</span>
               </div>
             )}
-            <button onClick={reload} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', padding: 6 }} title="Refresh data">
-              <i className="ti ti-refresh" style={{ fontSize: 16 }} />
+            <button onClick={reload} style={{ background:'none', border:'none', color:'var(--muted)', cursor:'pointer', padding:6 }} title="Refresh data">
+              <i className="ti ti-refresh" style={{ fontSize:16 }} />
             </button>
-            <button onClick={() => setPage('settings')} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', padding: 6 }}>
-              <i className="ti ti-settings" style={{ fontSize: 18 }} />
+            <button onClick={() => setPage('settings')} style={{ background:'none', border:'none', color:'var(--muted)', cursor:'pointer', padding:6 }}>
+              <i className="ti ti-settings" style={{ fontSize:18 }} />
             </button>
           </div>
         </div>
 
-        {/* Pages */}
         {page === 'dashboard'      && <Dashboard projects={projects} setPage={setPage} setActiveProjectId={setActiveProjectId} />}
         {page === 'projects'       && <Projects projects={projects} setPage={setPage} setActiveProjectId={setActiveProjectId} removeProject={removeProject} />}
         {page === 'new-project'    && <NewProject addProject={addProject} setPage={setPage} setActiveProjectId={setActiveProjectId} />}
@@ -96,6 +91,12 @@ export default function App() {
         {page === 'guardrails'     && <GuardrailDefinitions />}
         {page === 'settings'       && <Settings />}
       </div>
+
+      <FinOpsChatty
+        page={page}
+        projectId={page === 'project-detail' ? activeProjectId : null}
+        projectName={activeProject?.name}
+      />
     </div>
   )
 }
