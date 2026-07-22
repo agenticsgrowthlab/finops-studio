@@ -114,9 +114,15 @@ export async function generateProjectPPT(project) {
   addTitle(s3, 'Architecture Review', 'Claude AI architecture assessment — grounded in project data')
 
   const review = project.arch_review
-  if (review?.claude_summary) {
-    const clean = review.claude_summary.replace(/#{1,3} /g,'').replace(/\*\*/g,'')
+  const summary = review?.claude_summary || review?.recommended_arch || null
+  if (summary && summary.length > 10) {
+    const clean = summary.replace(/#{1,3} /g,'').replace(/\*\*/g,'')
     s3.addText(clean.slice(0,1400), { x:0.5, y:1.2, w:12.3, h:5.4, fontSize:10, fontFace:'Calibri', color:MUTED, valign:'top', wrap:true, paraSpaceBefore:8 })
+  } else if (review) {
+    // Review exists but no summary — show what we have
+    const ia = review.interview_answers || {}
+    const lines = Object.entries(typeof ia === 'string' ? JSON.parse(ia) : ia).map(([k,v]) => `${k}: ${v}`).join('\n')
+    s3.addText('Architecture review on file. Summary:\n\n' + (lines || 'See project for details.'), { x:0.5, y:1.2, w:12.3, h:5.4, fontSize:11, fontFace:'Calibri', color:MUTED, valign:'top', wrap:true })
   } else {
     s3.addText('No architecture review generated yet.\nUse the Architecture Review tab to generate one.', { x:0.5, y:3.0, w:12.3, h:1.5, fontSize:14, fontFace:'Calibri', color:MUTED, align:'center', italic:true })
   }
