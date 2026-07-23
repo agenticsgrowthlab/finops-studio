@@ -17,6 +17,7 @@ export function ArchReviews({ projects, reload }) {
   const [approving, setApproving] = useState(null)
   const [selectedId, setSelectedId] = useState('all')
   const [collapsed, setCollapsed] = useState({})
+  const [expandedSummary, setExpandedSummary] = useState({})
 
   const withReviews = [...projects.filter(p => p.arch_review)].sort((a,b) => a.name.localeCompare(b.name))
   const withoutReviews = [...projects.filter(p => !p.arch_review)].sort((a,b) => a.name.localeCompare(b.name))
@@ -128,13 +129,23 @@ export function ArchReviews({ projects, reload }) {
                 </div>
 
                 {review.claude_summary && (
-                  <div style={{ background: 'rgba(212,185,106,0.05)', border: '1px solid rgba(212,185,106,0.15)', borderRadius: 10, padding: '14px 18px' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <i className="ti ti-sparkles" /> AI Architecture Summary
+                  <div
+                    onClick={() => setExpandedSummary(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
+                    style={{ background: 'rgba(212,185,106,0.05)', border: '1px solid rgba(212,185,106,0.15)', borderRadius: 10, padding: '14px 18px', cursor: 'pointer' }}
+                  >
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><i className="ti ti-sparkles" /> AI Architecture Summary</span>
+                      <i className={`ti ${expandedSummary[p.id] ? 'ti-chevron-up' : 'ti-chevron-down'}`} style={{ fontSize: 13 }} />
                     </div>
-                    <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.7, maxHeight: 120, overflow: 'hidden', maskImage: 'linear-gradient(to bottom, black 60%, transparent)' }}>
-                      {review.claude_summary.replace(/#{1,3} /g, '').replace(/\*\*/g, '').slice(0, 400)}...
-                    </div>
+                    {expandedSummary[p.id] ? (
+                      <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+                        {review.claude_summary.replace(/#{1,3} /g, '').replace(/\*\*/g, '')}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.7, maxHeight: 80, overflow: 'hidden', maskImage: 'linear-gradient(to bottom, black 50%, transparent)' }}>
+                        {review.claude_summary.replace(/#{1,3} /g, '').replace(/\*\*/g, '').slice(0, 300)}...
+                      </div>
+                    )}
                   </div>
                 )}
               </>
