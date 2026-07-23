@@ -1,4 +1,4 @@
-// api/server.js - again
+// api/server.js
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
@@ -66,9 +66,18 @@ app.get('/api/health', async (req, res) => {
 
 // ── Org helper ────────────────────────────────────────────────────────────────
 export async function getOrgId() {
-  const r = await pool.query(`SELECT id FROM organizations WHERE name = 'Agentics Growth Lab' LIMIT 1`)
-  if (!r.rows[0]) throw new Error('Organization not found — run seed first')
-  return r.rows[0].id
+  // Always return the org that has projects — prevents cold-start duplicate org bugs
+  const r = await pool.query(`
+    SELECT o.id FROM organizations o
+    INNER JOIN projects p ON p.org_id = o.id
+    WHERE o.name = 'Agentics Growth Lab'
+    LIMIT 1
+  `)
+  if (r.rows[0]) return r.rows[0].id
+  // Fallback: any org with this name
+  const r2 = await pool.query(`SELECT id FROM organizations WHERE name = 'Agentics Growth Lab' ORDER BY created_at DESC LIMIT 1`)
+  if (!r2.rows[0]) throw new Error('Organization not found — run seed first')
+  return r2.rows[0].id
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────
