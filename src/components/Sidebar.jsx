@@ -87,13 +87,14 @@ export default function Sidebar({ page, setPage, projects, activeProjectId, setA
           <i className="ti ti-adjustments-horizontal" />
           Scenario Planning
         </button>
+
+
+        {/* Spend Leadership */}
+        <div className="sidebar-section-label" style={{ marginTop: 8 }}>Spend Leadership</div>
         <button className={`sidebar-link ${isActive('reports') ? 'active' : ''}`} onClick={() => nav('reports')}>
           <i className="ti ti-presentation" />
           Leadership Reports
         </button>
-
-        {/* Spend Leadership */}
-        <div className="sidebar-section-label" style={{ marginTop: 8 }}>Spend Leadership</div>
         <button className={`sidebar-link ${isActive('onboarding') ? 'active' : ''}`} onClick={() => nav('onboarding')}>
           <i className="ti ti-list-check" />
           Onboarding Plan

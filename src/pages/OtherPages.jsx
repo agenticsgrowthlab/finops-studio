@@ -101,7 +101,7 @@ export function ArchReviews({ projects, reload }) {
                 <button className="btn btn-ghost btn-sm" onClick={() => generateProjectPPT(p)}>
                   <i className="ti ti-presentation" /> PPT
                 </button>
-                <i className={`ti ${isCollapsed ? 'ti-chevron-down' : 'ti-chevron-up'}`} style={{ fontSize: 14, color: 'var(--muted)', marginLeft: 4 }} />
+                <i className={`ti ${isCollapsed ? 'ti-chevron-down' : 'ti-chevron-up'}`} style={{ fontSize: 14, color: 'var(--muted)', marginLeft: 4, cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); toggleCollapse(p.id) }} />
               </div>
             </div>
 
@@ -244,6 +244,53 @@ export function ScenarioPlanning({ projects }) {
       </div>
     </div>
   )
+}
+
+
+function exportSpendCSV(projects) {
+  const rows = [
+    ['Project', 'Type', 'Team', 'Service', 'Model', 'Calls/Day', 'Prompt Tokens', 'Completion Tokens', 'Caching', 'Monthly Cost', 'Annual Forecast', 'Cost Rating', 'Risk Level', 'Arch Score', 'Budget Annual', 'Budget Variance %'],
+  ]
+
+  projects.forEach(p => {
+    const services = p.services || []
+    if (services.length === 0) {
+      const est = p.estimate
+      const monthly = est ? Number(est.cost_exp_month) : 0
+      rows.push([
+        p.name, p.type, p.team || '', '(Estimate only)', est?.model || '', '', '', '', '', 
+        monthly.toFixed(2), (monthly * 12).toFixed(2),
+        p.cost_score || '', p.risk_level || '', p.arch_score || '',
+        p.budget_annual || '', '',
+      ])
+    } else {
+      services.forEach(svc => {
+        const monthly = Number(svc.cost_month || 0)
+        const annual = monthly * 12
+        const budget = Number(p.budget_annual || 0)
+        const variance = budget > 0 ? (((annual - budget) / budget) * 100).toFixed(1) : ''
+        rows.push([
+          p.name, p.type, p.team || '', svc.name, 
+          svc.model_id || '', svc.calls_per_day || '',
+          svc.prompt_tokens_avg || '', svc.completion_tokens_avg || '',
+          svc.caching_enabled ? 'Yes' : 'No',
+          monthly.toFixed(2), annual.toFixed(2),
+          p.cost_score || '', p.risk_level || '', p.arch_score || '',
+          budget || '', variance,
+        ])
+      })
+    }
+  })
+
+  const esc = v => '"' + String(v).replace(/"/g, '""') + '"'
+  const csv = rows.map(r => r.map(esc).join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `AI_FinOps_Spend_Report_${new Date().toISOString().slice(0,10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 export function LeadershipReports({ projects }) {
