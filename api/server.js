@@ -72,16 +72,16 @@ export async function getOrgId() {
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-import projectsRouter   from './routes/projects.js'
-import servicesRouter   from './routes/services.js'
-import guardrailsRouter from './routes/guardrails.js'
-import decisionsRouter  from './routes/decisions.js'
-import snapshotsRouter  from './routes/snapshots.js'
-import pricingRouter    from './routes/pricing.js'
-import chatRouter       from './routes/chat.js'
-import reviewsRouter    from './routes/reviews.js'
-import notesRouter      from './routes/notes.js'
-import tasksRouter      from './routes/tasks.js'
+import projectsRouter   from './lib/projects.js'
+import servicesRouter   from './lib/services.js'
+import guardrailsRouter from './lib/guardrails.js'
+import decisionsRouter  from './lib/decisions.js'
+import snapshotsRouter  from './lib/snapshots.js'
+import pricingRouter    from './lib/pricing.js'
+import chatRouter       from './lib/chat.js'
+import reviewsRouter    from './lib/reviews.js'
+import notesRouter      from './lib/notes.js'
+import tasksRouter      from './lib/tasks.js'
 
 app.use('/api/projects',   projectsRouter)
 app.use('/api/services',   servicesRouter)
