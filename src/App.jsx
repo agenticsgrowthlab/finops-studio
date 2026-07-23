@@ -16,6 +16,7 @@ import OnboardingPlan from './pages/OnboardingPlan.jsx'
 import Journal from './pages/Journal.jsx'
 import { useAppState } from './hooks/useAppState.js'
 import useWorkflowBanner from './components/WorkflowBanner.jsx'
+import FloatingNotepad from './components/FloatingNotepad.jsx'
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
@@ -26,6 +27,7 @@ export default function App() {
     addService, addDecision, reload,
   } = useAppState()
 
+  const [notepadOpen, setNotepadOpen] = useState(false)
   const { banner, panel } = useWorkflowBanner({ setPage, activeProjectId, setActiveProjectId, projects })
   const alertCount = projects.reduce((s, p) => s + (p.alerts || []).length, 0)
   const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
@@ -87,6 +89,9 @@ export default function App() {
                 <span style={{ fontSize:12, fontWeight:700, color:'#F87171' }}>{alertCount} alert{alertCount !== 1 ? 's' : ''}</span>
               </div>
             )}
+            <button onClick={() => setNotepadOpen(o => !o)} style={{ background: notepadOpen ? 'rgba(212,185,106,0.15)' : 'none', border: 'none', color: notepadOpen ? 'var(--gold)' : 'var(--muted)', cursor: 'pointer', padding: 6, borderRadius: 6 }} title="Quick Notes">
+              <i className="ti ti-notebook" style={{ fontSize: 18 }} />
+            </button>
             <button onClick={reload} style={{ background:'none', border:'none', color:'var(--muted)', cursor:'pointer', padding:6 }} title="Refresh data">
               <i className="ti ti-refresh" style={{ fontSize:16 }} />
             </button>
