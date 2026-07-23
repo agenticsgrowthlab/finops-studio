@@ -107,7 +107,8 @@ export default function App() {
         {page === 'settings'       && <Settings />}
       </div>
 
-<FinOpsChatty
+   {panel}
+      <FinOpsChatty
         page={page}
         projectId={page === 'project-detail' ? activeProjectId : null}
         projectName={activeProject?.name}
