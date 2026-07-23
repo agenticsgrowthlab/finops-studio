@@ -100,9 +100,11 @@ export default function Dashboard({ projects, setPage, setActiveProjectId }) {
           {(() => {
             const byModel = {}
             projects.forEach(p => (p.services || []).forEach(s => {
-              byModel[s.model] = (byModel[s.model] || 0) + s.cost_month
+              const key = s.model_id || s.model || 'Unknown'
+              byModel[key] = (byModel[key] || 0) + Number(s.cost_month || 0)
             }))
             const total = Object.values(byModel).reduce((a, b) => a + b, 0)
+            if (total === 0) return <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)', fontSize: 13 }}>No services added yet</div>
             return Object.entries(byModel).sort((a, b) => b[1] - a[1]).map(([model, spend]) => (
               <div key={model} style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>

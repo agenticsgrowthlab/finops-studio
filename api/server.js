@@ -80,6 +80,8 @@ import snapshotsRouter  from './routes/snapshots.js'
 import pricingRouter    from './routes/pricing.js'
 import chatRouter       from './routes/chat.js'
 import reviewsRouter    from './routes/reviews.js'
+import notesRouter      from './routes/notes.js'
+import tasksRouter      from './routes/tasks.js'
 
 app.use('/api/projects',   projectsRouter)
 app.use('/api/services',   servicesRouter)
@@ -89,6 +91,8 @@ app.use('/api/snapshots',  snapshotsRouter)
 app.use('/api/pricing',    pricingRouter)
 app.use('/api/chat',       chatRouter)
 app.use('/api/reviews',    reviewsRouter)
+app.use('/api/notes',      notesRouter)
+app.use('/api/tasks',      tasksRouter)
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ error: 'Not found' }))

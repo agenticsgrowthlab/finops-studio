@@ -92,6 +92,17 @@ export default function Sidebar({ page, setPage, projects, activeProjectId, setA
           Leadership Reports
         </button>
 
+        {/* Spend Leadership */}
+        <div className="sidebar-section-label" style={{ marginTop: 8 }}>Spend Leadership</div>
+        <button className={`sidebar-link ${isActive('onboarding') ? 'active' : ''}`} onClick={() => nav('onboarding')}>
+          <i className="ti ti-list-check" />
+          Onboarding Plan
+        </button>
+        <button className={`sidebar-link ${isActive('journal') ? 'active' : ''}`} onClick={() => nav('journal')}>
+          <i className="ti ti-notebook" />
+          Journal
+        </button>
+
         {/* Reference */}
         <div className="sidebar-section-label" style={{ marginTop: 8 }}>Reference</div>
         <button className={`sidebar-link ${isActive('guardrails') ? 'active' : ''}`} onClick={() => nav('guardrails')}>

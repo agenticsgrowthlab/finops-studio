@@ -12,6 +12,8 @@ import FinOpsFoundation from './pages/FinOpsFoundation.jsx'
 import Forecasting from './pages/Forecasting.jsx'
 import Alerts from './pages/Alerts.jsx'
 import HowToUse from './pages/HowToUse.jsx'
+import OnboardingPlan from './pages/OnboardingPlan.jsx'
+import Journal from './pages/Journal.jsx'
 import { useAppState } from './hooks/useAppState.js'
 import useWorkflowBanner from './components/WorkflowBanner.jsx'
 
@@ -41,6 +43,8 @@ export default function App() {
     'forecasting':        'Forecasting',
     'alerts':             'Alerts',
     'how-to-use':         'How to Use',
+    'onboarding':         'Onboarding Plan',
+    'journal':            'Journal',
     settings:         'Settings',
   }
 
@@ -104,11 +108,12 @@ export default function App() {
         {page === 'guardrails'        && <GuardrailDefinitions />}
         {page === 'finops-foundation' && <FinOpsFoundation />}
         {page === 'how-to-use'        && <HowToUse />}
+        {page === 'onboarding'        && <OnboardingPlan projects={projects} />}
+        {page === 'journal'           && <Journal projects={projects} />}
         {page === 'settings'       && <Settings />}
       </div>
 
-   {panel}
-      <FinOpsChatty
+<FinOpsChatty
         page={page}
         projectId={page === 'project-detail' ? activeProjectId : null}
         projectName={activeProject?.name}
