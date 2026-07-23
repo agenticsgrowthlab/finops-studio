@@ -118,7 +118,7 @@ export default function FloatingNotepad({ open, onClose }) {
     try {
       const r = await fetch(`${API}/api/notes`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: 'New Note', body: '' }),
+        body: JSON.stringify({ title: 'New Note', body: ' ' }),
       })
       const data = await r.json()
       if (data.success) {
