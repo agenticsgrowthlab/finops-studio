@@ -148,8 +148,8 @@ export default function useWorkflowBanner({ setPage, activeProjectId, setActiveP
           <span style={{ fontSize: 12.5, color: '#6B4F10' }}>Follow the guided workflow to create your first project and export a leadership report.</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <button onClick={() => { setStep(0); setOpen(true) }} style={{ padding: '7px 16px', background: '#0F2240', color: '#D4B96A', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, minHeight: 44 }}>
-            <i className="ti ti-player-play" style={{ fontSize: 12 }} /> Start Guided Tour
+          <button onClick={() => setOpen(true)} style={{ padding: '7px 16px', background: '#0F2240', color: '#D4B96A', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, minHeight: 44 }}>
+            <i className="ti ti-player-play" style={{ fontSize: 12 }} /> {step > 0 ? 'Continue Tour' : 'Start Guided Tour'}
           </button>
           <button onClick={dismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8A6A10', padding: 8, display: 'flex', alignItems: 'center', opacity: 0.6, minWidth: 44, minHeight: 44, justifyContent: 'center' }}>
             <i className="ti ti-x" style={{ fontSize: 16 }} />
@@ -230,7 +230,7 @@ export default function useWorkflowBanner({ setPage, activeProjectId, setActiveP
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} style={{ flex: 1, padding: '8px 14px', background: '#F4F7FC', color: '#4A5568', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: step === 0 ? 'not-allowed' : 'pointer', opacity: step === 0 ? 0.4 : 1, fontFamily: 'inherit' }}>← Back</button>
           {isLast ? (
-            <button onClick={dismiss} style={{ flex: 1, padding: '8px 14px', background: '#0F2240', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Got it ✓</button>
+            <button onClick={() => setOpen(false)} style={{ flex: 1, padding: '8px 14px', background: '#0F2240', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Got it ✓</button>
           ) : (
             <button onClick={() => setStep(s => s + 1)} style={{ flex: 1, padding: '8px 14px', background: '#0F2240', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Next →</button>
           )}
