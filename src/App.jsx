@@ -118,7 +118,9 @@ export default function App() {
         {page === 'settings'       && <Settings />}
       </div>
 
-<FinOpsChatty
+      {panel}
+      <FloatingNotepad open={notepadOpen} onClose={() => setNotepadOpen(false)} />
+      <FinOpsChatty
         page={page}
         projectId={page === 'project-detail' ? activeProjectId : null}
         projectName={activeProject?.name}
