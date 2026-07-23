@@ -27,25 +27,34 @@ function useDrag(headerRef, posRef, setPos) {
   return { onPointerDown, onPointerMove, onPointerUp }
 }
 
-function useResize(sizeRef, setSize) {
-  const resizing = useRef(false)
-  const start = useRef({ x: 0, y: 0, w: 0, h: 0 })
+function useResize(posRef, setPos, sizeRef, setSize) {
+  const resizing = useRef(null) // stores direction
+  const start = useRef({ mx: 0, my: 0, x: 0, y: 0, w: 0, h: 0 })
 
-  const onResizeDown = useCallback((e) => {
+  const onResizeDown = useCallback((dir) => (e) => {
     e.stopPropagation()
-    resizing.current = true
-    start.current = { x: e.clientX, y: e.clientY, w: sizeRef.current.w, h: sizeRef.current.h }
+    resizing.current = dir
+    start.current = { mx: e.clientX, my: e.clientY, x: posRef.current.x, y: posRef.current.y, w: sizeRef.current.w, h: sizeRef.current.h }
     e.currentTarget.setPointerCapture(e.pointerId)
-  }, [sizeRef])
+  }, [posRef, sizeRef])
 
   const onResizeMove = useCallback((e) => {
     if (!resizing.current) return
-    const w = Math.max(320, start.current.w + (e.clientX - start.current.x))
-    const h = Math.max(280, start.current.h + (e.clientY - start.current.y))
-    setSize({ w, h }); sizeRef.current = { w, h }
-  }, [sizeRef])
+    const dir = resizing.current
+    const dx = e.clientX - start.current.mx
+    const dy = e.clientY - start.current.my
+    let { x, y, w, h } = start.current
 
-  const onResizeUp = useCallback(() => { resizing.current = false }, [])
+    if (dir.includes('e')) w = Math.max(320, w + dx)
+    if (dir.includes('s')) h = Math.max(280, h + dy)
+    if (dir.includes('w')) { w = Math.max(320, w - dx); x = start.current.x + (start.current.w - w) }
+    if (dir.includes('n')) { h = Math.max(280, h - dy); y = start.current.y + (start.current.h - h) }
+
+    setSize({ w, h }); sizeRef.current = { w, h }
+    setPos({ x, y }); posRef.current = { x, y }
+  }, [posRef, sizeRef])
+
+  const onResizeUp = useCallback(() => { resizing.current = null }, [])
   return { onResizeDown, onResizeMove, onResizeUp }
 }
 
@@ -57,7 +66,7 @@ export default function FloatingNotepad({ open, onClose }) {
   const [size, setSize] = useState({ w: DEFAULT_W, h: DEFAULT_H })
   const headerRef = useRef(null)
   const drag = useDrag(headerRef, posRef, setPos)
-  const resize = useResize(sizeRef, setSize)
+  const resize = useResize(posRef, setPos, sizeRef, setSize)
 
   const [notes, setNotes] = useState([])
   const [activeNote, setActiveNote] = useState(null)
@@ -148,6 +157,7 @@ export default function FloatingNotepad({ open, onClose }) {
       style={{ position: 'fixed', left: pos.x, top: pos.y, width: size.w, height: size.h, zIndex: 600, display: 'flex', flexDirection: 'column', boxShadow: '0 16px 64px rgba(0,0,0,0.5)', borderRadius: 12, overflow: 'hidden', border: '1px solid #D4B96A', userSelect: 'none', fontFamily: "'Inter', system-ui, sans-serif" }}
       onPointerMove={e => { drag.onPointerMove(e); resize.onResizeMove(e) }}
       onPointerUp={e => { drag.onPointerUp(e); resize.onResizeUp(e) }}
+      onPointerCancel={e => { drag.onPointerUp(e); resize.onResizeUp(e) }}
     >
       {/* Green header */}
       <div
@@ -218,13 +228,19 @@ export default function FloatingNotepad({ open, onClose }) {
         </div>
       </div>
 
-      {/* Resize handle */}
-      <div
-        onPointerDown={resize.onResizeDown}
-        style={{ position: 'absolute', bottom: 0, right: 0, width: 16, height: 16, cursor: 'se-resize', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#D4B96A', borderRadius: '8px 0 0 0' }}
-      >
-        <i className="ti ti-arrows-diagonal" style={{ fontSize: 9, color: '#1B4332' }} />
+      {/* 8-direction resize handles */}
+      {/* Corners */}
+      <div onPointerDown={resize.onResizeDown('nw')} style={{ position:'absolute', top:0, left:0, width:10, height:10, cursor:'nw-resize', zIndex:10 }} />
+      <div onPointerDown={resize.onResizeDown('ne')} style={{ position:'absolute', top:0, right:0, width:10, height:10, cursor:'ne-resize', zIndex:10 }} />
+      <div onPointerDown={resize.onResizeDown('sw')} style={{ position:'absolute', bottom:0, left:0, width:10, height:10, cursor:'sw-resize', zIndex:10 }} />
+      <div onPointerDown={resize.onResizeDown('se')} style={{ position:'absolute', bottom:0, right:0, width:16, height:16, cursor:'se-resize', display:'flex', alignItems:'center', justifyContent:'center', background:'#D4B96A', borderRadius:'8px 0 0 0', zIndex:10 }}>
+        <i className="ti ti-arrows-diagonal" style={{ fontSize:9, color:'#1B4332' }} />
       </div>
+      {/* Edges */}
+      <div onPointerDown={resize.onResizeDown('n')} style={{ position:'absolute', top:0, left:10, right:10, height:4, cursor:'n-resize', zIndex:10 }} />
+      <div onPointerDown={resize.onResizeDown('s')} style={{ position:'absolute', bottom:0, left:10, right:10, height:4, cursor:'s-resize', zIndex:10 }} />
+      <div onPointerDown={resize.onResizeDown('w')} style={{ position:'absolute', left:0, top:10, bottom:10, width:4, cursor:'w-resize', zIndex:10 }} />
+      <div onPointerDown={resize.onResizeDown('e')} style={{ position:'absolute', right:0, top:10, bottom:10, width:4, cursor:'e-resize', zIndex:10 }} />
 
       {/* Footer */}
       <div style={{ background: '#F5F0E0', borderTop: '1px solid #D4B96A', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }} onPointerDown={e => e.stopPropagation()}>
