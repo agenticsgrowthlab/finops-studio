@@ -1,6 +1,5 @@
-api/routes
-api/routes/**
-api/db
-api/db/**
 api/node_modules
 api/node_modules/**
+api/db/migrate.js
+api/db/seed.js
+api/package-lock.json
