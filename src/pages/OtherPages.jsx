@@ -355,6 +355,9 @@ export function LeadershipReports({ projects }) {
         <div>
           <div className="page-sub">Executive-ready PowerPoint reports generated from live project data</div>
         </div>
+        <button className="btn btn-ghost" onClick={() => exportSpendCSV(projects)} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <i className="ti ti-file-spreadsheet" /> Export Spend CSV
+        </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
