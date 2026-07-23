@@ -1,2 +1,6 @@
-api
-api/**
+api/routes
+api/routes/**
+api/db
+api/db/**
+api/node_modules
+api/node_modules/**
